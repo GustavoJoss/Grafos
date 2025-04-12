@@ -1,5 +1,8 @@
 import zipfile
 import os
+import pandas as pd
+import networkx as nx
+import matplotlib.pyplot as pl
 
 class Grafo:
     def __init__(self):
@@ -107,9 +110,50 @@ if __name__ == "__main__":
             break
 
     if caminho_exemplo:
-        print(f"🗂️  Processando: {caminho_exemplo}")
+        print(f" Processando: {caminho_exemplo}")
         grafo = Grafo()
         grafo.carregar_arquivo(caminho_exemplo)
         grafo.estatisticas()
+
+        
+        
+        adjacencia_df = pd.DataFrame([
+            {"Vértice": v, "Vizinhos": vizinhos}
+            for v, vizinhos in grafo.adjacencia.items()
+        ])
+        print("\n Lista de Adjacência:")
+        print(adjacencia_df)
+
+        # Mostra arestas requeridas
+        arestas_df = pd.DataFrame(grafo.arestas_requeridas, columns=["Vértice 1", "Vértice 2"])
+        print("\n Arestas Requeridas:")
+        print(arestas_df)
+
+        
+        vertices_df = pd.DataFrame(sorted(grafo.vertices_requeridos), columns=["Vértices Requeridos"])
+        print("\nVértices Requeridos:")
+        print(vertices_df)
+
     else:
         print("Nenhum arquivo .dat encontrado no zip extraído.")
+
+    def desenhar_grafo(grafo):
+        G = nx.Graph()
+
+        
+        for u, v in grafo.arestas_requeridas:
+            G.add_edge(u, v)
+
+        # Desenho do grafo
+        pos = nx.spring_layout(G, seed=42)  
+        pl.figure(figsize=(10, 8))
+        nx.draw_networkx_nodes(G, pos, node_color='skyblue', node_size=600)
+        nx.draw_networkx_edges(G, pos, edge_color='gray')
+        nx.draw_networkx_labels(G, pos, font_size=12, font_family="sans-serif")
+
+        pl.title("Grafo das Arestas Requeridas")
+        pl.axis("off")
+        pl.tight_layout()
+        pl.show()
+
+    desenhar_grafo(grafo)
